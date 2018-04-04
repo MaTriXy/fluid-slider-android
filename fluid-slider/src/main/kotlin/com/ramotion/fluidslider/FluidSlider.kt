@@ -12,45 +12,46 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewOutlineProvider
 import android.view.animation.OvershootInterpolator
+import kotlin.math.*
 
 
-class FluidSlider : View {
+class FluidSlider @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
 
     private companion object {
-        val BAR_HEIGHT_NORMAL = 56
-        val BAR_HEIGHT_SMALL = 40
+        const val BAR_HEIGHT_NORMAL = 56
+        const val BAR_HEIGHT_SMALL = 40
 
-        val BAR_CORNER_RADIUS = 2
-        val BAR_VERTICAL_OFFSET = 1.5f
-        val BAR_INNER_HORIZONTAL_OFFSET = 0 // TODO: remove
+        const val BAR_CORNER_RADIUS = 2
+        const val BAR_VERTICAL_OFFSET = 1.5f
+        const val BAR_INNER_HORIZONTAL_OFFSET = 0 // TODO: remove
 
-        val SLIDER_WIDTH = 4
-        val SLIDER_HEIGHT = 1 + BAR_VERTICAL_OFFSET
+        const val SLIDER_WIDTH = 4
+        const val SLIDER_HEIGHT = 1 + BAR_VERTICAL_OFFSET
 
-        val TOP_CIRCLE_DIAMETER = 1
-        val BOTTOM_CIRCLE_DIAMETER = 25.0f
-        val TOUCH_CIRCLE_DIAMETER = 1
-        val LABEL_CIRCLE_DIAMETER = 10
+        const val TOP_CIRCLE_DIAMETER = 1
+        const val BOTTOM_CIRCLE_DIAMETER = 25.0f
+        const val TOUCH_CIRCLE_DIAMETER = 1
+        const val LABEL_CIRCLE_DIAMETER = 10
 
-        val ANIMATION_DURATION = 400
-        val TOP_SPREAD_FACTOR = 0.4
-        val BOTTOM_START_SPREAD_FACTOR = 0.25
-        val BOTTOM_END_SPREAD_FACTOR = 0.1
-        val METABALL_HANDLER_FACTOR = 2.4
-        val METABALL_MAX_DISTANCE = 15.0
-        val METABALL_RISE_DISTANCE = 1.1f
+        const val ANIMATION_DURATION = 400
+        const val TOP_SPREAD_FACTOR = 0.4f
+        const val BOTTOM_START_SPREAD_FACTOR = 0.25f
+        const val BOTTOM_END_SPREAD_FACTOR = 0.1f
+        const val METABALL_HANDLER_FACTOR = 2.4f
+        const val METABALL_MAX_DISTANCE = 15.0f
+        const val METABALL_RISE_DISTANCE = 1.1f
 
-        val TEXT_SIZE = 12
-        val TEXT_OFFSET = 8
-        val TEXT_START = "0"
-        val TEXT_END = "100"
+        const val TEXT_SIZE = 12
+        const val TEXT_OFFSET = 8
+        const val TEXT_START = "0"
+        const val TEXT_END = "100"
 
-        val COLOR_BAR = 0xff6168e7.toInt()
-        val COLOR_LABEL = Color.WHITE
-        val COLOR_LABEL_TEXT = Color.BLACK
-        val COLOR_BAR_TEXT = Color.WHITE
+        const val COLOR_BAR = 0xff6168e7.toInt()
+        const val COLOR_LABEL = Color.WHITE
+        const val COLOR_LABEL_TEXT = Color.BLACK
+        const val COLOR_BAR_TEXT = Color.WHITE
 
-        val INITIAL_POSITION = 0.5f
+        const val INITIAL_POSITION = 0.5f
     }
 
     private val barHeight: Float
@@ -63,7 +64,7 @@ class FluidSlider : View {
     private val touchRectDiameter: Float
     private val labelRectDiameter: Float
 
-    private val metaballMaxDistance: Double
+    private val metaballMaxDistance: Float
     private val metaballRiseDistance: Float
     private val textOffset: Float
 
@@ -90,7 +91,9 @@ class FluidSlider : View {
      * Duration of "bubble" rise in milliseconds.
      */
     var duration = ANIMATION_DURATION.toLong()
-        set(value) { field = Math.abs(value) }
+        set(value) {
+            field = abs(value)
+        }
 
     /**
      * Color of text inside "bubble".
@@ -107,21 +110,27 @@ class FluidSlider : View {
      */
     var colorBar: Int
         get() = paintBar.color
-        set(value) { paintBar.color = value }
+        set(value) {
+            paintBar.color = value
+        }
 
     /**
      * Color of circle "bubble" inside bar.
      */
     var colorBubble: Int
         get() = paintLabel.color
-        set(value) { paintLabel.color = value }
+        set(value) {
+            paintLabel.color = value
+        }
 
     /**
      * Text size.
      */
     var textSize: Float
         get() = paintText.textSize
-        set(value) { paintText.textSize = value }
+        set(value) {
+            paintText.textSize = value
+        }
 
     /**
      * Bubble text.
@@ -139,11 +148,12 @@ class FluidSlider : View {
     var endText: String? = TEXT_END
 
     /**
-     * Initial positon of "bubble" in range form `0.0` to `1.0`.
+     * Initial position of "bubble" in range form `0.0` to `1.0`.
      */
     var position = INITIAL_POSITION
         set(value) {
-            field = Math.max(0f, Math.min(1f, value))
+            field = max(0f, min(1f, value))
+            positionListener?.invoke(field)
         }
 
     /**
@@ -162,7 +172,7 @@ class FluidSlider : View {
     var endTrackingListener: (() -> Unit)? = null
 
     @SuppressLint("NewApi")
-    inner class OutlineProvider: ViewOutlineProvider() {
+    inner class OutlineProvider : ViewOutlineProvider() {
         override fun getOutline(v: View?, outline: Outline?) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val rect = Rect(rectBar.left.toInt(), rectBar.top.toInt(), rectBar.right.toInt(), rectBar.bottom.toInt())
@@ -171,9 +181,10 @@ class FluidSlider : View {
         }
     }
 
-    class State: BaseSavedState {
+    class State : BaseSavedState {
         companion object {
-            @JvmField @Suppress("unused")
+            @JvmField
+            @Suppress("unused")
             val CREATOR = object : Parcelable.Creator<State> {
                 override fun createFromParcel(parcel: Parcel): State = State(parcel)
                 override fun newArray(size: Int): Array<State?> = arrayOfNulls(size)
@@ -191,16 +202,15 @@ class FluidSlider : View {
         val duration: Long
 
         constructor(superState: Parcelable,
-                            position: Float,
-                            startText: String?,
-                            endText: String?,
-                            textSize: Float,
-                            colorLabel: Int,
-                            colorBar: Int,
-                            colorBarText: Int,
-                            colorLabelText: Int,
-                            duration: Long) : super(superState)
-        {
+                    position: Float,
+                    startText: String?,
+                    endText: String?,
+                    textSize: Float,
+                    colorLabel: Int,
+                    colorBar: Int,
+                    colorBarText: Int,
+                    colorLabelText: Int,
+                    duration: Long) : super(superState) {
             this.position = position
             this.startText = startText
             this.endText = endText
@@ -239,11 +249,7 @@ class FluidSlider : View {
         override fun describeContents(): Int = 0
     }
 
-    constructor(context: Context) : this(context, null, 0)
-
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             outlineProvider = OutlineProvider()
         }
@@ -266,9 +272,9 @@ class FluidSlider : View {
                 colorBarText = a.getColor(R.styleable.FluidSlider_bar_text_color, COLOR_BAR_TEXT)
                 colorBubbleText = a.getColor(R.styleable.FluidSlider_bubble_text_color, COLOR_LABEL_TEXT)
 
-                position = Math.max(0f, Math.min(1f, a.getFloat(R.styleable.FluidSlider_initial_position, INITIAL_POSITION)))
+                position = max(0f, min(1f, a.getFloat(R.styleable.FluidSlider_initial_position, INITIAL_POSITION)))
                 textSize = a.getDimension(R.styleable.FluidSlider_text_size, TEXT_SIZE * density)
-                duration = Math.abs(a.getInteger(R.styleable.FluidSlider_duration, ANIMATION_DURATION)).toLong()
+                duration = abs(a.getInteger(R.styleable.FluidSlider_duration, ANIMATION_DURATION)).toLong()
 
                 a.getString(R.styleable.FluidSlider_start_text)?.also { startText = it }
                 a.getString(R.styleable.FluidSlider_end_text)?.also { endText = it }
@@ -326,7 +332,6 @@ class FluidSlider : View {
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = resolveSizeAndState(desiredWidth, widthMeasureSpec, 0)
         val h = resolveSizeAndState(desiredHeight, heightMeasureSpec, 0)
-
         setMeasuredDimension(w, h)
     }
 
@@ -334,7 +339,6 @@ class FluidSlider : View {
         super.onSizeChanged(w, h, oldw, oldh)
 
         val width = w.toFloat()
-
         rectBar.set(0f, barVerticalOffset, width, barVerticalOffset + barHeight)
         rectTopCircle.set(0f, barVerticalOffset, topCircleDiameter, barVerticalOffset + topCircleDiameter)
         rectBottomCircle.set(0f, barVerticalOffset, bottomCircleDiameter, barVerticalOffset + bottomCircleDiameter)
@@ -379,11 +383,12 @@ class FluidSlider : View {
             val y = event.y
             if (rectBar.contains(x, y)) {
                 if (!rectTouch.contains(x, y)) {
-                    position = Math.max(0f, Math.min(1f, (x - rectTouch.width() / 2) / maxMovement))
+                    position = max(0f, min(1f, (x - rectTouch.width() / 2) / maxMovement))
                 }
                 touchX = x
                 beginTrackingListener?.invoke()
                 showLabel(metaballRiseDistance)
+                parent.requestDisallowInterceptTouchEvent(true)
                 true
             } else {
                 false
@@ -392,19 +397,20 @@ class FluidSlider : View {
         MotionEvent.ACTION_MOVE -> {
             touchX?.let {
                 touchX = event.x
-                val newPos = Math.max(0f, Math.min(1f, position + (touchX!! - it) / maxMovement))
-                if (newPos != position) positionListener?.invoke(position)
+                val newPos = max(0f, min(1f, position + (event.x - it) / maxMovement))
                 position = newPos
                 invalidate()
                 true
             } == true
         }
-        MotionEvent.ACTION_UP -> {
+        MotionEvent.ACTION_UP,
+        MotionEvent.ACTION_CANCEL -> {
             touchX?.let {
                 touchX = null
                 endTrackingListener?.invoke()
                 hideLabel()
                 performClick()
+                parent.requestDisallowInterceptTouchEvent(false)
                 true
             } == true
         }
@@ -413,72 +419,72 @@ class FluidSlider : View {
 
     private fun offsetRectToPosition(position: Float, vararg rects: RectF) {
         for (rect in rects) {
-            rect.offsetTo(position - rect.width()/ 2f, rect.top)
+            rect.offsetTo(position - rect.width() / 2f, rect.top)
         }
     }
 
-    private fun getVector(radians: Double, length: Double): Pair<Double, Double> {
-        val x = (Math.cos(radians) * length)
-        val y = (Math.sin(radians) * length)
+    private fun getVector(radians: Float, length: Float): Pair<Float, Float> {
+        val x = (cos(radians) * length)
+        val y = (sin(radians) * length)
         return x to y
     }
 
-    private fun getVectorLength(p1: Pair<Double, Double>, p2: Pair<Double, Double>): Double {
-        val x = p1.first - p2.first
-        val y = p1.second - p2.second
-        return Math.sqrt(x * x + y * y)
+    private fun getVectorLength(x1: Float, y1: Float, x2: Float, y2: Float): Float {
+        val x = x1 - x2
+        val y = y1 - y2
+        return sqrt(x * x + y * y)
     }
 
-    private fun drawMetaball(canvas: Canvas, paint: Paint,
-                             path: Path, circle1: RectF, circle2: RectF,
+    private fun drawMetaball(canvas: Canvas,
+                             paint: Paint,
+                             path: Path,
+                             circle1: RectF,
+                             circle2: RectF,
                              topBorder: Float,
                              riseDistance: Float = metaballRiseDistance,
-                             maxDistance: Double = metaballMaxDistance,
-                             topSpreadFactor: Double = TOP_SPREAD_FACTOR,
-                             bottomStartSpreadFactor: Double = BOTTOM_START_SPREAD_FACTOR,
-                             botomEndSpreadFactor: Double = BOTTOM_END_SPREAD_FACTOR,
-                             handleRate: Double = METABALL_HANDLER_FACTOR)
-    {
-        val radius1 = circle1.width() / 2.0
-        val radius2 = circle2.width() / 2.0
+                             maxDistance: Float = metaballMaxDistance,
+                             cornerRadius: Float = barCornerRadius,
+                             topSpreadFactor: Float = TOP_SPREAD_FACTOR,
+                             bottomStartSpreadFactor: Float = BOTTOM_START_SPREAD_FACTOR,
+                             bottomEndSpreadFactor: Float = BOTTOM_END_SPREAD_FACTOR,
+                             handleRate: Float = METABALL_HANDLER_FACTOR) {
+        val radius1 = circle1.width() / 2.0f
+        val radius2 = circle2.width() / 2.0f
 
-        if (radius1 == 0.0 || radius2 == 0.0) {
+        if (radius1 == 0.0f || radius2 == 0.0f) {
             return
         }
 
-        val d = getVectorLength(
-                circle1.centerX().toDouble() to circle1.centerY().toDouble(),
-                circle2.centerX().toDouble() to circle2.centerY().toDouble())
-        if (d > maxDistance || d <= Math.abs(radius1 - radius2)) {
+        val d = getVectorLength(circle1.centerX(), circle1.centerY(), circle2.centerX(), circle2.centerY())
+        if (d > maxDistance || d <= abs(radius1 - radius2)) {
             return
         }
 
-        val riseRatio = Math.min(1f, Math.max(0f,topBorder - circle2.top) /riseDistance)
+        val riseRatio = min(1f, max(0f, topBorder - circle2.top) / riseDistance)
 
-        val u1: Double
-        val u2: Double
+        val u1: Float
+        val u2: Float
         if (d < radius1 + radius2) { // case circles are overlapping
-            u1 = Math.acos((radius1 * radius1 + d * d - radius2 * radius2) /
-                    (2 * radius1 * d))
-            u2 = Math.acos((radius2 * radius2 + d * d - radius1 * radius1) /
-                    (2 * radius2 * d))
+            u1 = acos((radius1 * radius1 + d * d - radius2 * radius2) / (2 * radius1 * d))
+            u2 = acos((radius2 * radius2 + d * d - radius1 * radius1) / (2 * radius2 * d))
         } else {
-            u1 = 0.0
-            u2 = 0.0
+            u1 = 0.0f
+            u2 = 0.0f
         }
 
-        val centerXMin = (circle2.centerX() - circle1.centerX()).toDouble()
-        val centerYMin = (circle2.centerY() - circle1.centerY()).toDouble()
+        val centerXMin = circle2.centerX() - circle1.centerX()
+        val centerYMin = circle2.centerY() - circle1.centerY()
 
-        val bottomSpreadDiff = bottomStartSpreadFactor - botomEndSpreadFactor
+        val bottomSpreadDiff = bottomStartSpreadFactor - bottomEndSpreadFactor
         val bottomSpreadFactor = bottomStartSpreadFactor - bottomSpreadDiff * riseRatio
 
-        val angle1 = Math.atan2(centerYMin, centerXMin)
-        val angle2 = Math.acos((radius1 - radius2) / d)
+        val fPI = PI.toFloat()
+        val angle1 = atan2(centerYMin, centerXMin)
+        val angle2 = acos((radius1 - radius2) / d)
         val angle1a = angle1 + u1 + (angle2 - u1) * bottomSpreadFactor
         val angle1b = angle1 - u1 - (angle2 - u1) * bottomSpreadFactor
-        val angle2a = (angle1 + Math.PI - u2 - (Math.PI - u2 - angle2) * topSpreadFactor)
-        val angle2b = (angle1 - Math.PI + u2 + (Math.PI - u2 - angle2) * topSpreadFactor)
+        val angle2a = (angle1 + fPI - u2 - (fPI - u2 - angle2) * topSpreadFactor)
+        val angle2b = (angle1 - fPI + u2 + (fPI - u2 - angle2) * topSpreadFactor)
 
         val p1a = getVector(angle1a, radius1).let { (it.first + circle1.centerX()) to (it.second + circle1.centerY()) }.toList()
         val p1b = getVector(angle1b, radius1).let { (it.first + circle1.centerX()) to (it.second + circle1.centerY()) }.toList()
@@ -486,46 +492,48 @@ class FluidSlider : View {
         val p2b = getVector(angle2b, radius2).let { (it.first + circle2.centerX()) to (it.second + circle2.centerY()) }.toList()
 
         val totalRadius = (radius1 + radius2)
-        val d2Base = Math.min(Math.max(topSpreadFactor, bottomSpreadFactor) * handleRate, getVectorLength(p1a[0] to p1a[1], p2a[0] to p2a[1]) / totalRadius)
+        val d2Base = min(
+                max(topSpreadFactor, bottomSpreadFactor) * handleRate,
+                getVectorLength(p1a[0], p1a[1], p2a[0], p2a[1]) / totalRadius)
 
         // case circles are overlapping:
-        val d2 = d2Base * Math.min(1.0, d * 2 / (radius1 + radius2))
+        val d2 = d2Base * min(1.0f, d * 2 / (radius1 + radius2))
 
         val r1 = radius1 * d2
         val r2 = radius2 * d2
 
-        val pi2 = Math.PI / 2
-        val sp1 = getVector(angle1a - pi2, r1).toList().map { it.toFloat() }
-        val sp2 = getVector(angle2a + pi2, r2).toList().map { it.toFloat() }
-        val sp3 = getVector(angle2b - pi2, r2).toList().map { it.toFloat() }
-        val sp4 = getVector(angle1b + pi2, r1).toList().map { it.toFloat() }
+        val pi2 = fPI / 2
+        val sp1 = getVector(angle1a - pi2, r1).toList()
+        val sp2 = getVector(angle2a + pi2, r2).toList()
+        val sp3 = getVector(angle2b - pi2, r2).toList()
+        val sp4 = getVector(angle1b + pi2, r1).toList()
 
         // move bottom point to bar top border
-        val yOffset = (Math.abs(topBorder - p1a[1]) * riseRatio).toFloat() - 1
+        val yOffset = (abs(topBorder - p1a[1]) * riseRatio) - 1
+        val fp1a = p1a.let { l -> listOf(l[0], l[1] - yOffset) }
+        val fp1b = p1b.let { l -> listOf(l[0], l[1] - yOffset) }
 
-        val fp1a = p1a.map { it.toFloat() }.let { l -> listOf(l[0], l[1] - yOffset) }
-        val fp1b = p1b.map { it.toFloat() }.let { l -> listOf(l[0], l[1] - yOffset) }
-        val fp2a = p2a.map { it.toFloat() }
-        val fp2b = p2b.map { it.toFloat() }
+        with(path) {
+            reset()
+            moveTo(fp1a[0], fp1a[1] + cornerRadius)
+            lineTo(fp1a[0], fp1a[1])
+            cubicTo(fp1a[0] + sp1[0], fp1a[1] + sp1[1], p2a[0] + sp2[0], p2a[1] + sp2[1], p2a[0], p2a[1])
+            lineTo(circle2.centerX(), circle2.centerY())
+            lineTo(p2b[0], p2b[1])
+            cubicTo(p2b[0] + sp3[0], p2b[1] + sp3[1], fp1b[0] + sp4[0], fp1b[1] + sp4[1], fp1b[0], fp1b[1])
+            lineTo(fp1b[0], fp1b[1] + cornerRadius)
+            close()
+        }
 
-        path.reset()
-        path.moveTo(fp1a[0], fp1a[1] + barCornerRadius)
-        path.lineTo(fp1a[0], fp1a[1])
-        path.cubicTo(fp1a[0] + sp1[0], fp1a[1] + sp1[1], fp2a[0] + sp2[0], fp2a[1] + sp2[1], fp2a[0], fp2a[1])
-        path.lineTo(circle2.centerX(), circle2.centerY())
-        path.lineTo(fp2b[0], fp2b[1])
-        path.cubicTo(fp2b[0] + sp3[0], fp2b[1] + sp3[1], fp1b[0] + sp4[0], fp1b[1] + sp4[1], fp1b[0], fp1b[1])
-        path.lineTo(fp1b[0], fp1b[1] + barCornerRadius)
-        path.close()
-
-        canvas.drawPath(path, paint)
-        canvas.drawOval(circle2, paint)
+        with(canvas) {
+            drawPath(path, paint)
+            drawOval(circle2, paint)
+        }
     }
 
     private fun drawText(canvas: Canvas, paint: Paint,
                          text: String, align: Paint.Align, color: Int, offset: Float,
-                         holderRect: RectF, textRect: Rect)
-    {
+                         holderRect: RectF, textRect: Rect) {
         paint.color = color
         paint.textAlign = align
         paint.getTextBounds(text, 0, text.length, textRect)
@@ -538,14 +546,15 @@ class FluidSlider : View {
         canvas.drawText(text, 0, text.length, x, y, paint)
     }
 
-    private fun showLabel(dinstace: Float) {
-        val top = barVerticalOffset - dinstace
-        val labelVOffset =(topCircleDiameter - labelRectDiameter) / 2f
+    private fun showLabel(dinstance: Float) {
+        val top = barVerticalOffset - dinstance
+        val labelVOffset = (topCircleDiameter - labelRectDiameter) / 2f
 
         val animation = ValueAnimator.ofFloat(rectTopCircle.top, top)
         animation.addUpdateListener {
-            rectTopCircle.offsetTo(rectTopCircle.left, it.animatedValue as Float)
-            rectLabel.offsetTo(rectLabel.left, it.animatedValue as Float + labelVOffset)
+            val value = it.animatedValue as Float
+            rectTopCircle.offsetTo(rectTopCircle.left, value)
+            rectLabel.offsetTo(rectLabel.left, value + labelVOffset)
             invalidate()
         }
         animation.duration = duration
@@ -554,11 +563,12 @@ class FluidSlider : View {
     }
 
     private fun hideLabel() {
-        val labelVOffset =(topCircleDiameter - labelRectDiameter) / 2f
+        val labelVOffset = (topCircleDiameter - labelRectDiameter) / 2f
         val animation = ValueAnimator.ofFloat(rectTopCircle.top, barVerticalOffset)
         animation.addUpdateListener {
-            rectTopCircle.offsetTo(rectTopCircle.left, it.animatedValue as Float)
-            rectLabel.offsetTo(rectLabel.left, it.animatedValue as Float + labelVOffset)
+            val value = it.animatedValue as Float
+            rectTopCircle.offsetTo(rectTopCircle.left, value)
+            rectLabel.offsetTo(rectLabel.left, value + labelVOffset)
             invalidate()
         }
         animation.duration = duration

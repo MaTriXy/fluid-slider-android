@@ -14,7 +14,7 @@ Inspired by [Virgil Pana](https://dribbble.com/virgilpana) [shot](https://dribbb
 **Looking for developers for your project?**<br>
 This project is maintained by Ramotion, Inc. We specialize in the designing and coding of custom UI for Mobile Apps and Websites.
 
-<a href="https://ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-contact-us/#Get_in_Touch">
+<a href="https://dev.ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-contact-us">
 <img src="https://github.com/ramotion/gliding-collection/raw/master/contact_our_team@2x.png" width="187" height="34"></a> <br>
 
 The [Android mockup](https://store.ramotion.com/product/samsung-galaxy-s8-mockups?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android) available [here](https://store.ramotion.com/product/samsung-galaxy-s8-mockups?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android).
@@ -26,22 +26,22 @@ The [Android mockup](https://store.ramotion.com/product/samsung-galaxy-s8-mockup
 
 ## Installation
 ​
-Just download the package from [here](http://central.maven.org/maven2/com/ramotion/fluidslider/fluid-slider/0.1.0/fluid-slider-0.1.0.aar) and add it to your project classpath, or just use the maven repo:
+Just download the package from [here](http://central.maven.org/maven2/com/ramotion/fluidslider/fluid-slider/0.2.0/fluid-slider-0.2.0.aar) and add it to your project classpath, or just use the maven repo:
 
 Gradle:
 ```groovy
-compile 'com.ramotion.fluidslider:fluid-slider:0.1.0'
+implementation 'com.ramotion.fluidslider:fluid-slider:0.2.0'
 ```
 SBT:
 ```scala
-libraryDependencies += "com.ramotion.fluidslider" % "fluid-slider" % "0.1.0"
+libraryDependencies += "com.ramotion.fluidslider" % "fluid-slider" % "0.2.0"
 ```
 Maven:
 ```xml
 <dependency>
   <groupId>com.ramotion.fluidslider</groupId>
   <artifactId>fluid-slider</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <type>aar</type>
 </dependency>
 ```
@@ -61,6 +61,45 @@ You can also track the beginning and completion of the movement of the slider, u
 ```
 slider.beginTrackingListener = { /* action on slider touched */ }
 slider.endTrackingListener = { /* action on slider released */ }
+```
+
+Here is simple example, how to change `FluidSlider` range.
+```kotlin
+// Kotlin
+val max = 45
+val min = 10
+val total = max - min
+
+val slider = findViewById<FluidSlider>(R.id.fluidSlider)
+slider.positionListener = { pos -> slider.bubbleText = "${min + (total  * pos).toInt()}" }
+slider.position = 0.3f
+slider.startText ="$min"
+slider.endText = "$max"
+
+// Java
+final FluidSlider slider = findViewById(R.id.fluidSlider);
+slider.setBeginTrackingListener(new Function0<Unit>() {
+    @Override
+    public Unit invoke() {
+        Log.d("D", "setBeginTrackingListener");
+        return Unit.INSTANCE;
+    }
+});
+
+slider.setEndTrackingListener(new Function0<Unit>() {
+    @Override
+    public Unit invoke() {
+        Log.d("D", "setEndTrackingListener");
+        return Unit.INSTANCE;
+    }
+});
+
+// Or Java 8 lambda
+slider.setPositionListener(pos -> {
+    final String value = String.valueOf( (int)((1 - pos) * 100) );
+    slider.setBubbleText(value);
+    return Unit.INSTANCE;
+});
 ```
 
 Here are the attributes you can specify through XML or related setters:
@@ -85,11 +124,11 @@ Try our UI components in our mobile app. Contact us if interested.
 
 <a href="https://play.google.com/store/apps/details?id=com.ramotion.showroom" >
 <img src="https://raw.githubusercontent.com/Ramotion/react-native-circle-menu/master/google_play@2x.png" width="104" height="34"></a>
-<a href="https://ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android-contact-us/#Get_in_Touch">
+<a href="https://dev.ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android-contact-us">
 <img src="https://github.com/ramotion/gliding-collection/raw/master/contact_our_team@2x.png" width="187" height="34"></a>
 <br>
 <br>
 
 Follow us for the latest updates:<br>
-[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=https://github.com/Ramotion/fluid-slider-android)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ramotion.svg?style=social)](https://twitter.com/ramotion)
+<a href="https://goo.gl/rPFpid" >
+<img src="https://i.imgur.com/ziSqeSo.png/" width="156" height="28"></a>

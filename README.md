@@ -1,9 +1,11 @@
 [![header](./header.png)](https://ramotion.com?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android-logo)
-![animation](./Fluid-slider.gif)
+<img src="https://github.com/Ramotion/fluid-slider-android/blob/master/Fluid_slider.gif" width="400" height="300" />
+<br><br/>
 
 # Fluid Slider for Android
 [![Twitter](https://img.shields.io/badge/Twitter-@Ramotion-blue.svg?style=flat)](http://twitter.com/Ramotion)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/92bd2e49f7e543cd8748c670b9e52ca7)](https://www.codacy.com/app/dvg4000/fluid-slider-android?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ramotion/fluid-slider-android&amp;utm_campaign=Badge_Grade)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/Ramotion)
 
 Inspired by [Virgil Pana](https://dribbble.com/virgilpana) [shot](https://dribbble.com/shots/3868232-Fluid-Slider)
 
@@ -14,7 +16,7 @@ Inspired by [Virgil Pana](https://dribbble.com/virgilpana) [shot](https://dribbb
 **Looking for developers for your project?**<br>
 This project is maintained by Ramotion, Inc. We specialize in the designing and coding of custom UI for Mobile Apps and Websites.
 
-<a href="https://dev.ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-contact-us">
+<a href="mailto:alex.a@ramotion.com?subject=Project%20inquiry%20from%20Github">
 <img src="https://github.com/ramotion/gliding-collection/raw/master/contact_our_team@2x.png" width="187" height="34"></a> <br>
 
 The [Android mockup](https://store.ramotion.com/product/samsung-galaxy-s8-mockups?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android) available [here](https://store.ramotion.com/product/samsung-galaxy-s8-mockups?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android).
@@ -26,22 +28,22 @@ The [Android mockup](https://store.ramotion.com/product/samsung-galaxy-s8-mockup
 
 ## Installation
 ​
-Just download the package from [here](http://central.maven.org/maven2/com/ramotion/fluidslider/fluid-slider/0.2.0/fluid-slider-0.2.0.aar) and add it to your project classpath, or just use the maven repo:
+Just download the package from [here](http://central.maven.org/maven2/com/ramotion/fluidslider/fluid-slider/0.3.0/fluid-slider-0.3.0.aar) and add it to your project classpath, or just use the maven repo:
 
 Gradle:
 ```groovy
-implementation 'com.ramotion.fluidslider:fluid-slider:0.2.0'
+implementation 'com.ramotion.fluidslider:fluid-slider:0.3.0'
 ```
 SBT:
 ```scala
-libraryDependencies += "com.ramotion.fluidslider" % "fluid-slider" % "0.2.0"
+libraryDependencies += "com.ramotion.fluidslider" % "fluid-slider" % "0.3.0"
 ```
 Maven:
 ```xml
 <dependency>
   <groupId>com.ramotion.fluidslider</groupId>
   <artifactId>fluid-slider</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <type>aar</type>
 </dependency>
 ```
@@ -114,6 +116,9 @@ Here are the attributes you can specify through XML or related setters:
 * `initial_position` - Initial positon of "bubble" in range form `0.0` to `1.0`.
 * `size` - Height of slider. Can be `small` (40dp) and `normal` (56dp).
 
+
+This library is a part of a <a href="https://github.com/Ramotion/android-ui-animation-components-and-libraries"><b>selection of our best UI open-source projects.</b></a>
+
 ## License
 ​
 Fluid Slider for Android is released under the MIT license.
@@ -124,7 +129,7 @@ Try our UI components in our mobile app. Contact us if interested.
 
 <a href="https://play.google.com/store/apps/details?id=com.ramotion.showroom" >
 <img src="https://raw.githubusercontent.com/Ramotion/react-native-circle-menu/master/google_play@2x.png" width="104" height="34"></a>
-<a href="https://dev.ramotion.com/?utm_source=gthb&utm_medium=special&utm_campaign=fluid-slider-android-contact-us">
+<a href="mailto:alex.a@ramotion.com?subject=Project%20inquiry%20from%20Github">
 <img src="https://github.com/ramotion/gliding-collection/raw/master/contact_our_team@2x.png" width="187" height="34"></a>
 <br>
 <br>

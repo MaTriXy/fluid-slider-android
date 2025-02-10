@@ -12,6 +12,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewOutlineProvider
 import android.view.animation.OvershootInterpolator
+import com.ramotion.fluidslider.FluidSlider.Size.NORMAL
+import com.ramotion.fluidslider.FluidSlider.Size.SMALL
 import kotlin.math.*
 
 
@@ -41,7 +43,7 @@ class FluidSlider @JvmOverloads constructor(
     private companion object {
         const val BAR_CORNER_RADIUS = 2
         const val BAR_VERTICAL_OFFSET = 1.5f
-        const val BAR_INNER_HORIZONTAL_OFFSET = 0 // TODO: remove
+        const val BAR_INNER_HORIZONTAL_OFFSET = 0
 
         const val SLIDER_WIDTH = 4
         const val SLIDER_HEIGHT = 1 + BAR_VERTICAL_OFFSET
@@ -224,7 +226,7 @@ class FluidSlider @JvmOverloads constructor(
         val colorLabelText: Int
         val duration: Long
 
-        constructor(superState: Parcelable,
+        constructor(superState: Parcelable?,
                     position: Float,
                     startText: String?,
                     endText: String?,
@@ -258,6 +260,7 @@ class FluidSlider @JvmOverloads constructor(
         }
 
         override fun writeToParcel(parcel: Parcel, i: Int) {
+            super.writeToParcel(parcel, i)
             parcel.writeFloat(position)
             parcel.writeString(startText)
             parcel.writeString(endText)
@@ -346,8 +349,8 @@ class FluidSlider @JvmOverloads constructor(
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
-        super.onRestoreInstanceState(state)
         if (state is State) {
+            super.onRestoreInstanceState(state.superState)
             position = state.position
             startText = state.startText
             endText = state.endText
@@ -357,6 +360,8 @@ class FluidSlider @JvmOverloads constructor(
             colorBarText = state.colorBarText
             colorBubbleText = state.colorLabelText
             duration = state.duration
+        } else {
+            super.onRestoreInstanceState(state)
         }
     }
 
